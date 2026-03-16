@@ -6,7 +6,7 @@ export default {
 
         // 允许访问的域名列表 (白名单)
         const ALLOWED_ORIGINS = [
-            "https://你的github用户名.github.io",//记得修改
+            "https://fly5200.github.io",//记得修改
             "http://127.0.0.1:5500", // 本地开发备用
             "http://localhost:5500"
         ];
