@@ -1,59 +1,56 @@
-DROP TABLE IF EXISTS users;
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     avatar TEXT,
-    created_at INTEGER
+    created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
-DROP TABLE IF EXISTS connected_accounts;
-CREATE TABLE connected_accounts (
+CREATE TABLE IF NOT EXISTS connected_accounts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    platform TEXT NOT NULL, -- 'netease', 'qq', 'migu', 'kuwo'
+    platform TEXT NOT NULL,
     external_user_id TEXT,
     last_synced_at INTEGER,
-    FOREIGN KEY(user_id) REFERENCES users(id)
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS playlists;
-CREATE TABLE playlists (
+CREATE TABLE IF NOT EXISTS playlists (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     name TEXT NOT NULL,
-    is_sync INTEGER DEFAULT 0, -- 0: Local, 1: Synced
+    is_sync INTEGER DEFAULT 0,
     platform TEXT DEFAULT 'local',
-    external_id TEXT, -- Original Playlist ID from platform
-    can_delete INTEGER DEFAULT 1, -- 0: Cannot delete manually (for synced)
-    created_at INTEGER,
-    FOREIGN KEY(user_id) REFERENCES users(id)
+    external_id TEXT, 
+    can_delete INTEGER DEFAULT 1,
+    created_at INTEGER DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS playlist_songs;
-CREATE TABLE playlist_songs (
+CREATE TABLE IF NOT EXISTS playlist_songs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     playlist_id INTEGER NOT NULL,
     song_json TEXT NOT NULL,
-    is_local_add INTEGER DEFAULT 0, -- 0: Imported/Synced, 1: Manually Added
-    created_at INTEGER,
+    is_local_add INTEGER DEFAULT 0,
+    created_at INTEGER DEFAULT (strftime('%s', 'now')),
     FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS favorites;
-CREATE TABLE favorites (
+CREATE TABLE IF NOT EXISTS favorites (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     song_json TEXT NOT NULL,
-    created_at INTEGER,
-    FOREIGN KEY(user_id) REFERENCES users(id)
+    created_at INTEGER DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS play_history;
-CREATE TABLE play_history (
+CREATE TABLE IF NOT EXISTS play_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     song_json TEXT NOT NULL,
-    played_at INTEGER,
-    FOREIGN KEY(user_id) REFERENCES users(id)
+    played_at INTEGER DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_playlist_songs_playlist_id ON playlist_songs(playlist_id);
+CREATE INDEX IF NOT EXISTS idx_play_history_user_id ON play_history(user_id);
